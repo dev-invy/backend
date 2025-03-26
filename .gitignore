@@ -35,4 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
-application.yml
+
+### Sensitive Config Files ###
+.env
+.env.docker
+src/main/resources/application-prod.yml
+src/main/resources/application-local.yml
+
+### Log Files ###
+logs/
+*.log
