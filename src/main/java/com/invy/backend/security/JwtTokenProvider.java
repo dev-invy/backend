@@ -1,4 +1,4 @@
-package com.invy.backend.config.security;
+package com.invy.backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

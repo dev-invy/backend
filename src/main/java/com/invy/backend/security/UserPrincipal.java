@@ -1,4 +1,4 @@
-package com.invy.backend.config.security;
+package com.invy.backend.security;
 
 import com.invy.backend.entity.User;
 import lombok.Getter;

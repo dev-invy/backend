@@ -1,4 +1,4 @@
-package com.invy.backend.config.security;
+package com.invy.backend.security;
 
 import java.util.Map;
 
