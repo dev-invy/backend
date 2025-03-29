@@ -4,6 +4,7 @@ import com.invy.backend.dto.AnswerDto;
 import com.invy.backend.dto.QuestionDetailDto;
 import com.invy.backend.dto.QuestionDto;
 import com.invy.backend.entity.*;
+import com.invy.backend.exception.ResourceNotFoundException;
 import com.invy.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -89,14 +90,14 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public QuestionDetailDto getQuestionDetail(Long questionId, Long userId) {
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("질문", questionId));
 
         boolean bookmarked = false;
         boolean lgtmReacted = false;
 
         if (userId != null) {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
 
             bookmarked = bookmarkRepository.existsByUserAndQuestion(user, question);
             lgtmReacted = reactionRepository.existsByUserAndQuestion(user, question);
@@ -128,10 +129,10 @@ public class QuestionService {
     @Transactional
     public void toggleBookmark(Long questionId, Long userId) {
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("질문", questionId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
 
         Bookmark bookmark = bookmarkRepository.findByUserAndQuestion(user, question).orElse(null);
 
@@ -156,19 +157,20 @@ public class QuestionService {
     @Transactional
     public void toggleLgtm(Long questionId, Long userId) {
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("질문", questionId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
+
 
         Reaction reaction = reactionRepository.findByUserAndQuestion(user, question).orElse(null);
 
         if (reaction != null) {
-            // 이미 LGTM을 눌렀으면 삭제하고 카운트 감소
+            // 이미 LGTM 을 눌렀으면 삭제하고 카운트 감소
             reactionRepository.delete(reaction);
             question.setLgtmCount(question.getLgtmCount() - 1);
         } else {
-            // LGTM이 없으면 생성하고 카운트 증가
+            // LGTM 이 없으면 생성하고 카운트 증가
             reaction = Reaction.builder()
                     .user(user)
                     .question(question)

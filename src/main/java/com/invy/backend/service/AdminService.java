@@ -4,6 +4,7 @@ import com.invy.backend.dto.QuestionDto;
 import com.invy.backend.entity.Category;
 import com.invy.backend.entity.Keyword;
 import com.invy.backend.entity.Question;
+import com.invy.backend.exception.ResourceNotFoundException;
 import com.invy.backend.repository.AnswerRepository;
 import com.invy.backend.repository.CategoryRepository;
 import com.invy.backend.repository.KeywordRepository;
@@ -44,7 +45,7 @@ public class AdminService {
                                       Long categoryId, List<String> keywordNames) {
         // 카테고리 조회
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("카테고리", categoryId));
 
         // 키워드 처리 - 존재하면 조회, 없으면 생성
         Set<Keyword> keywords = new HashSet<>();
@@ -89,12 +90,12 @@ public class AdminService {
                                       String defaultAnswer, Long categoryId, List<String> keywordNames) {
         // 질문 조회
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("질문", questionId));
 
         // 카테고리 조회 및 설정
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new ResourceNotFoundException("카테고리", categoryId));
             question.setCategory(category);
         }
 
@@ -132,10 +133,10 @@ public class AdminService {
     public void deleteQuestion(Long questionId) {
         // 질문 존재 여부 확인
         if (!questionRepository.existsById(questionId)) {
-            throw new IllegalArgumentException("질문을 찾을 수 없습니다.");
+            throw new ResourceNotFoundException("질문", questionId);
         }
 
-        // 질문 삭제 (연관된 북마크, 답변 등은 cascade 설정에 따라 자동 삭제)
+        // 질문 삭제 (연관된 북마크, 답변 등은 cascade 설정을 통해 자동 삭제)
         questionRepository.deleteById(questionId);
     }
 
@@ -147,7 +148,7 @@ public class AdminService {
     public void deleteAnswer(Long answerId) {
         // 답변 존재 여부 확인
         if (!answerRepository.existsById(answerId)) {
-            throw new IllegalArgumentException("답변을 찾을 수 없습니다.");
+            throw new ResourceNotFoundException("답변", answerId);
         }
 
         // 답변 삭제

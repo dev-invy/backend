@@ -4,6 +4,7 @@ import com.invy.backend.dto.BookmarkDto;
 import com.invy.backend.entity.Bookmark;
 import com.invy.backend.entity.Category;
 import com.invy.backend.entity.User;
+import com.invy.backend.exception.ResourceNotFoundException;
 import com.invy.backend.repository.BookmarkRepository;
 import com.invy.backend.repository.CategoryRepository;
 import com.invy.backend.repository.UserRepository;
@@ -35,7 +36,7 @@ public class BookmarkService {
     @Transactional(readOnly = true)
     public Page<BookmarkDto> getUserBookmarks(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
 
         Page<Bookmark> bookmarks = bookmarkRepository.findByUser(user, pageable);
         return bookmarks.map(BookmarkDto::fromEntity);
@@ -51,11 +52,11 @@ public class BookmarkService {
     @Transactional(readOnly = true)
     public Page<BookmarkDto> getUserBookmarksByCategory(Long userId, Long categoryId, Pageable pageable) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
 
         Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
-
+                .orElseThrow(() -> new ResourceNotFoundException("카테고리", categoryId));
+        
         Page<Bookmark> bookmarks = bookmarkRepository.findByUserAndCategory(user, category, pageable);
         return bookmarks.map(BookmarkDto::fromEntity);
     }

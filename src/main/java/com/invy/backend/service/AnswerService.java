@@ -5,6 +5,7 @@ import com.invy.backend.entity.Answer;
 import com.invy.backend.entity.Question;
 import com.invy.backend.entity.Reaction;
 import com.invy.backend.entity.User;
+import com.invy.backend.exception.ResourceNotFoundException;
 import com.invy.backend.repository.AnswerRepository;
 import com.invy.backend.repository.QuestionRepository;
 import com.invy.backend.repository.ReactionRepository;
@@ -39,10 +40,10 @@ public class AnswerService {
     @Transactional
     public AnswerDto createAnswer(Long questionId, Long userId, String content, boolean isAnonymous) {
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("질문", questionId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
 
         Answer answer = Answer.builder()
                 .content(content)
@@ -61,16 +62,14 @@ public class AnswerService {
     /**
      * 답변 채택 - 기존에 채택된 답변이 있으면 채택 해제 후 새로운 답변 채택
      * @param answerId 답변 ID
-     * @param userId 사용자 ID (권한 확인용)
+     * @param userId 사용자 ID (권한 확인용, 현재는 사용 X)
      */
     @Transactional
     public void selectAnswer(Long answerId, Long userId) {
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new IllegalArgumentException("답변을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("답변", answerId));
 
         Question question = answer.getQuestion();
-
-        // 권한 체크는 다양한 방식으로 구현 가능함 (현재는 생략)
 
         // 이미 선택된 답변이 있으면 선택 해제
         Answer previousSelected = answerRepository.findByQuestionAndIsSelectedTrue(question).orElse(null);
@@ -96,19 +95,19 @@ public class AnswerService {
     @Transactional
     public void toggleLgtm(Long answerId, Long userId) {
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new IllegalArgumentException("답변을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("답변", answerId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자", userId));
 
         Reaction reaction = reactionRepository.findByUserAndAnswer(user, answer).orElse(null);
 
         if (reaction != null) {
-            // 이미 LGTM을 눌렀으면 삭제하고 카운트 감소
+            // 이미 LGTM 을 눌렀으면 삭제하고 카운트 감소
             reactionRepository.delete(reaction);
             answer.setLgtmCount(answer.getLgtmCount() - 1);
         } else {
-            // LGTM이 없으면 생성하고 카운트 증가
+            // LGTM 이 없으면 생성하고 카운트 증가
             reaction = Reaction.builder()
                     .user(user)
                     .answer(answer)
