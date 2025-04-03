@@ -45,3 +45,6 @@ src/main/resources/application-local.yml
 ### Log Files ###
 logs/
 *.log
+
+### Docker Volume ###
+/mysql-data
